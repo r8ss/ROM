@@ -6,53 +6,58 @@ on:
 jobs:
   import-folder:
     runs-on: ubuntu-latest
+    
     permissions:
       contents: write 
 
     steps:
-      - name: Checkout our sixteen branch
+      - name: Checkout our repo
         uses: actions/checkout@v4
         with:
           ref: sixteen 
 
-      - name: Fetch target folder via sparse-checkout
+      - name: Grab the folder from ArtisanROM
         run: |
-          echo "=> Cloning ArtisanROM (sixteen) using sparse-checkout..."
+          echo "=> Cloning ArtisanROM sixteen branch..."
+          # Shallow clone only the branch we need
+          git clone --depth 1 --branch sixteen https://github.com/ArtisanROM/ArtisanROM.git temp_artisan
           
-          # Just grab what we need without downloading the entire git history
-          git clone --filter=blob:none --no-checkout --depth 1 --branch sixteen https://github.com/ArtisanROM/ArtisanROM.git temp_artisan
+          # Check if the folder actually exists in the source to be sure
+          if [ -d "temp_artisan/prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService" ]; then
+            echo "=> Found the folder, preparing to move it..."
+            
+            # Create the target path in our repo
+            mkdir -p prebuilts/samsung/r9sxxx/system/priv-app/
+            
+            # Delete the old one if it exists so we don't have merge conflicts
+            rm -rf prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService
+            
+            # Copy the folder over
+            cp -ar temp_artisan/prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService prebuilts/samsung/r9sxxx/system/priv-app/
+            
+            echo "=> Successfully copied. Current structure:"
+            ls -R prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService
+          else
+            echo "Error: Source folder not found in ArtisanROM repo!"
+            exit 1
+          fi
           
-          cd temp_artisan
-          # Point straight to the PhotoRemasterService dir
-          git sparse-checkout set prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService
-          git checkout
-          cd ..
-          
-          echo "=> Copying over to our prebuilts..."
-          
-          # Make sure the target path exists first
-          mkdir -p prebuilts/samsung/r9sxxx/system/priv-app/
-          
-          # Copy it over, keeping file permissions intact
-          cp -a temp_artisan/prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService prebuilts/samsung/r9sxxx/system/priv-app/
-          
-          # Clean up the temp stuff
+          # Clean up the cloned source
           rm -rf temp_artisan
 
-      - name: Commit and push changes
+      - name: Push the changes
         run: |
-          # Set up git as the actions bot
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           
-          # Stage the new folder
+          # Add the files
           git add prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService
           
-          # Only commit if there's actually something new to avoid failing the workflow
+          # Check if there's actually a diff
           if ! git diff --cached --quiet; then
-            echo "Found new stuff, committing..."
+            echo "=> Changes detected, pushing..."
             git commit -m "prebuilts: fixup r9s (original author @Android-Artisan)"
             git push origin sixteen
           else
-            echo "Already up to date with ArtisanROM, nothing to do here."
+            echo "=> No changes found. Is the folder already there?"
           fi
