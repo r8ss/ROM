@@ -1,0 +1,58 @@
+name: Import PhotoRemasterService from ArtisanROM
+
+on:
+  workflow_dispatch: 
+
+jobs:
+  import-folder:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write 
+
+    steps:
+      - name: Checkout our sixteen branch
+        uses: actions/checkout@v4
+        with:
+          ref: sixteen 
+
+      - name: Fetch target folder via sparse-checkout
+        run: |
+          echo "=> Cloning ArtisanROM (sixteen) using sparse-checkout..."
+          
+          # Just grab what we need without downloading the entire git history
+          git clone --filter=blob:none --no-checkout --depth 1 --branch sixteen https://github.com/ArtisanROM/ArtisanROM.git temp_artisan
+          
+          cd temp_artisan
+          # Point straight to the PhotoRemasterService dir
+          git sparse-checkout set prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService
+          git checkout
+          cd ..
+          
+          echo "=> Copying over to our prebuilts..."
+          
+          # Make sure the target path exists first
+          mkdir -p prebuilts/samsung/r9sxxx/system/priv-app/
+          
+          # Copy it over, keeping file permissions intact
+          cp -a temp_artisan/prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService prebuilts/samsung/r9sxxx/system/priv-app/
+          
+          # Clean up the temp stuff
+          rm -rf temp_artisan
+
+      - name: Commit and push changes
+        run: |
+          # Set up git as the actions bot
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Stage the new folder
+          git add prebuilts/samsung/r9sxxx/system/priv-app/PhotoRemasterService
+          
+          # Only commit if there's actually something new to avoid failing the workflow
+          if ! git diff --cached --quiet; then
+            echo "Found new stuff, committing..."
+            git commit -m "prebuilts: fixup r9s (original author @Android-Artisan)"
+            git push origin sixteen
+          else
+            echo "Already up to date with ArtisanROM, nothing to do here."
+          fi
