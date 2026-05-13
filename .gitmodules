@@ -20,7 +20,7 @@
 	ignore = dirty
 [submodule "external/signapk"]
 	path = external/signapk
-	url = https://github.com/salvogiangri/signapk.git
+	https://github.com/UN1CA/external_signapk.git
 	ignore = dirty
 [submodule "external/smali"]
 	path = external/smali
