@@ -1,0 +1,41 @@
+name: Update Apktool Submodule Pointer
+
+on:
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Set Git identity
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Sync submodule
+        run: git submodule sync --recursive
+
+      - name: Initialize submodule
+        run: git submodule update --init --force --recursive external/apktool
+
+      - name: Checkout desired commit
+        run: |
+          cd external/apktool
+          git fetch origin
+          git checkout 1c1d15b070c2138d958fa8b685d430c49c4bb117
+          cd ..
+
+      - name: Commit updated pointer
+        run: |
+          git add external/apktool
+          git commit -m "external: apktool: Update apktool to 1c1d15b"
+          git push origin sixteen
