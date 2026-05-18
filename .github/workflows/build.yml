@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [d1xks]
+        target: [r8s,x1s]
 
     env:
       RELEASE_REPO: "ArtisanROM/rom_resources"
