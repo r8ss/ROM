@@ -13,6 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
+          ref: sixteen          
           fetch-depth: 0
           submodules: false
 
@@ -25,7 +26,7 @@ jobs:
         run: git submodule sync --recursive
 
       - name: Initialize submodule
-        run: git submodule update --init --force --recursive external/apktool
+        run: git submodule update --init --force --recursive external/signapk
 
       - name: Checkout desired commit
         run: |
