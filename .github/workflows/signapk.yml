@@ -31,11 +31,11 @@ jobs:
         run: |
           cd external/signapk
           git fetch origin
-          git checkout b85014d95bc87c82fa4f2c79bc43165e6ea8565f
+          git checkout af525c285fbd560a428aa66509089ae2444bd394
           cd ..
 
       - name: Commit updated pointer
         run: |
           git add external/signapk
-          git commit -m "external: signapk: update signapk to b85014d"
+          git commit -m "external: signapk: update signapk to af525c"
           git push origin sixteen
