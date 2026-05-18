@@ -11,7 +11,7 @@ diff --git a/smali_classes6/com/samsung/android/rune/CoreRune.smali b/smali_clas
 index 6af0829b..e17bed3c 100644
 --- a/smali_classes6/com/samsung/android/rune/CoreRune.smali
 +++ b/smali_classes6/com/samsung/android/rune/CoreRune.smali
-@@ -2620,7 +2620,7 @@
+@@ -2622,5 +2622,5 @@
      sput-boolean v0, Lcom/samsung/android/rune/CoreRune;->FW_WORKAROUND_RESPONSE_SPEED_LOW:Z
  
 -    const-string/jumbo v0, "ro.product.device"
@@ -19,7 +19,7 @@ index 6af0829b..e17bed3c 100644
  
      invoke-static {v0}, Landroid/os/SystemProperties;->get(Ljava/lang/String;)Ljava/lang/String;
  
-@@ -4440,7 +4440,7 @@
+@@ -4446,3 +4446,3 @@
 -    const-string/jumbo v0, "ro.product.model"
 +    const-string/jumbo v0, "ro.product.vendor.model"
  
