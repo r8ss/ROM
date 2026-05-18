@@ -1,7 +1,7 @@
 name: Update Signapk Submodule Pointer
 
 on:
-  workflow_dispatch:
+  workflow_dispatch: # Run this bad boy manually
 
 jobs:
   update:
@@ -13,30 +13,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
-          ref: sixteen          
+          ref: sixteen
           fetch-depth: 0
           submodules: false
 
       - name: Set Git identity
         run: |
+          # Set up git as the actions bot
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
+          
       - name: Sync submodule
         run: git submodule sync --recursive
 
       - name: Initialize submodule
-        run: git submodule update --init --force --recursive external/signapk
+        run: |
+          # Initialize ONLY the signapk path so the folder actually exists
+          git submodule update --init --force --recursive external/signapk
 
       - name: Checkout desired commit
         run: |
+          # Go into the right folder
           cd external/signapk
           git fetch origin
-          git checkout af525c285fbd560a428aa66509089ae2444bd394
-          cd ..
+          # Force checkout (-f) to clear out any fake local modifications (like gradlew.bat)
+          git checkout -f af525c285fbd560a428aa66509089ae2444bd394
+          cd ../.. # Go back to root to keep things clean
 
       - name: Commit updated pointer
         run: |
+          # Stage the updated submodule
           git add external/signapk
-          git commit -m "external: signapk: update signapk to af525c"
-          git push origin sixteen
+          
+          # Check if there are actual changes before committing to avoid failures
+          if ! git diff --cached --quiet; then
+            git commit -m "external: signapk: update signapk to af525c"
+            git push origin sixteen
+          else
+            echo "The pointer is already up to date, nothing to do here!"
+          fi
