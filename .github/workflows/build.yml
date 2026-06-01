@@ -71,6 +71,50 @@ jobs:
           java-version: 21
           cache: gradle
 
+      - name: Hotfix Samsung FUS Server (Samloader Rust Wrapper)
+        run: |
+          # 1. Télécharger le binaire Rust officiel précompilé pour Linux (v1.2.0)
+          curl -Lo samloader.tar.xz https://github.com/topjohnwu/samloader-rs/releases/download/1.2.0/samloader-linux-x86_64.tar.xz
+          tar -xf samloader.tar.xz
+          sudo mv samloader /usr/local/bin/samloader-rs
+          sudo chmod +x /usr/local/bin/samloader-rs
+
+          # 2. Créer un wrapper de compatibilité pour traduire la syntaxe Python vers Rust
+          sudo cat << 'EOF' > /usr/local/bin/samloader-compat
+          #!/bin/bash
+          MODEL=""
+          REGION=""
+          COMMAND=""
+          OUT_DIR=""
+
+          while [[ $# -gt 0 ]]; do
+            case "$1" in
+              -m|--model) MODEL="$2"; shift 2 ;;
+              -r|--region) REGION="$2"; shift 2 ;;
+              checkupdate|check-update) COMMAND="check-update"; shift ;;
+              download) COMMAND="download"; shift ;;
+              -O|-o|--out-dir|--out-file) OUT_DIR="$2"; shift 2 ;;
+              *) shift ;;
+            esac
+          done
+
+          if [ "$COMMAND" = "check-update" ]; then
+            exec /usr/local/bin/samloader-rs check-update -m "$MODEL" -r "$REGION"
+          elif [ "$COMMAND" = "download" ]; then
+            if [ -n "$OUT_DIR" ]; then
+              exec /usr/local/bin/samloader-rs download -m "$MODEL" -r "$REGION" -d "$OUT_DIR"
+            else
+              exec /usr/local/bin/samloader-rs download -m "$MODEL" -r "$REGION"
+            fi
+          fi
+          EOF
+          sudo chmod +x /usr/local/bin/samloader-compat
+
+          # 3. Patcher dynamiquement les scripts pour contourner l'exécution de la version Python défaillante
+          # La règle /pip install/! évite de casser les dépendances si pip cherche à télécharger le paquet d'origine
+          find . -type f -name "*.sh" -exec sed -i '/pip install/!s/\bsamloader\b/samloader-compat/g' {} +
+          find . -type f -name "*.sh" -exec sed -i 's/bin\/samloader/samloader-compat/g' {} +
+
       - name: Build dependencies
         run: |
           source ./buildenv.sh ${{ matrix.target }}
@@ -128,3 +172,4 @@ jobs:
           
           echo "Uploaded successfully! Download link:"
           echo "$RESPONSE" | jq -r '.data.downloadPage'
+
