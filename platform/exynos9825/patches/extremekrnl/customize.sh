@@ -1,12 +1,10 @@
 # [
 EXTREMEKRNL_REPO="https://github.com/Devandroid-bit/exynos982x_kernel/releases"
-h
+
 REPLACE_KERNEL_BINARIES()
 {
     [ -d "$TMP_DIR" ] && rm -rf "$TMP_DIR"
     mkdir -p "$TMP_DIR"
-    # ​This kernel actually won't boot. You need to flash Creeeeger/9820_kernel from the OneUI8Stable branch instead: https://github.com/Creeeeger/9820_kernel
-    # Changed from /latest/download/ to /download/v1.0/ 
     # This ensures it grabs the d1xks kernel from the initial release
     ZIP_LINK="https://github.com/Devandroid-bit/exynos982x_kernel/releases/download/latest/ArtisanKRNL-v3.1.5-N10-${TARGET_CODENAME}.zip"
 
