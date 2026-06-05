@@ -31,7 +31,7 @@ SOURCE_SUPER_GROUP_NAME="group_basic"
 SOURCE_AUTO_BRIGHTNESS_TYPE="5"
 SOURCE_DVFS_CONFIG_NAME="dvfs_policy_default"
 SOURCE_NFC_CHIP_VENDOR="NXP"
-SOURCE_FP_SENSOR_CONFIG="google_touch_display_optical,settings=3,aod_transition_animation"
+SOURCE_FP_SENSOR_CONFIG="google_touch_display_ultrasonic"
 SOURCE_HAS_MASS_CAMERA_APP=false
 SOURCE_HAS_QHD_DISPLAY=false
 SOURCE_HFR_MODE="2"
