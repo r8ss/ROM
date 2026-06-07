@@ -70,7 +70,15 @@ jobs:
           distribution: temurin
           java-version: 21
           cache: gradle
-      
+
+      - name: Install samloader-rs (Hotfix Samsung FUS)
+        run: |
+          # Téléchargement et installation propre du binaire Rust officiel pour Linux
+          curl -Lo samloader.tar.xz https://github.com/topjohnwu/samloader-rs/releases/download/1.2.0/samloader-linux-x86_64.tar.xz
+          tar -xf samloader.tar.xz
+          sudo mv samloader /usr/local/bin/samloader-rs
+          sudo chmod +x /usr/local/bin/samloader-rs
+
       - name: Build dependencies
         run: |
           source ./buildenv.sh ${{ matrix.target }}
