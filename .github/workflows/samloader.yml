@@ -1,0 +1,38 @@
+name: Update Samloader Submodule
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+
+      - name: Update Samloader pointer
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Mise à jour du pointeur vers le hash exact
+          HASH="633cd7990bfa9cc5367ea4dfb3756e1fa392ec6f"
+          
+          cd external/samloader
+          git fetch origin
+          git checkout $HASH
+          cd ../..
+          
+          # Ajout des modifications
+          git add external/samloader
+          
+          # Commit et push (ignore s'il n'y a pas de changement)
+          git commit -m "update: bump samloader to $HASH" || echo "No changes to commit"
+          git push origin sixteen
