@@ -167,15 +167,21 @@ for i in "${FIRMWARES[@]}"; do
     mkdir -p "$ODIN_DIR/${MODEL}_${CSC}"
 
     COUNT=1
-    # Loop infinetely until download succeeds
+    # Loop infinitely until download succeeds
     while true; do
         # shellcheck disable=SC2164
         # Anan's samloader stores its logs in the current working directory, let's move into OUT_DIR just for this time
         (
         cd "$OUT_DIR"
-        STR=""
-        [ $MODEL == "SM-S731B" ] && STR=" -v S731BXXU1AYH9/S731BOXM1AYH9/S731BXXU1AYH9/S731BXXU1AYH9"
-        samloader -m "$MODEL" -r "$CSC" -i "$IMEI" -s "$SERIAL_NO" download$STR -O "$ODIN_DIR/${MODEL}_${CSC}" || exit 1
+        if command -v samloader-rs &> /dev/null; then
+            # TopJohnWu's samloader-rs est ultra-rapide et gère nativement le nouveau protocole Samsung FUS
+            samloader-rs download -m "$MODEL" -r "$CSC" -d "$ODIN_DIR/${MODEL}_${CSC}" || exit 1
+        else
+            # Fallback sur l'ancien samloader Python si le binaire Rust n'est pas présent
+            STR=""
+            [ "$MODEL" == "SM-S731B" ] && STR=" -v S731BXXU1AYH9/S731BOXM1AYH9/S731BXXU1AYH9/S731BXXU1AYH9"
+            samloader -m "$MODEL" -r "$CSC" -i "$IMEI" -s "$SERIAL_NO" download$STR -O "$ODIN_DIR/${MODEL}_${CSC}" || exit 1
+        fi
         )
 
         ZIP_FILE="$(find "$ODIN_DIR/${MODEL}_${CSC}" -name "*.zip" | sort -r | head -n 1)"
