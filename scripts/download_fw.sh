@@ -120,7 +120,6 @@ VERIFY_ODIN_PACKAGES()
         LOG_STEP_OUT
     done < <(find "$ODIN_DIR/${MODEL}_${CSC}" -type f -name "*.md5")
 }
-# ]
 
 PREPARE_SCRIPT "$@"
 
@@ -170,16 +169,17 @@ for i in "${FIRMWARES[@]}"; do
     # Loop infinitely until download succeeds
     while true; do
         # shellcheck disable=SC2164
-        # Anan's samloader stores its logs in the current working directory, let's move into OUT_DIR just for this time
         (
         cd "$OUT_DIR"
         if command -v samloader-rs &> /dev/null; then
-            # TopJohnWu's samloader-rs est ultra-rapide et gère nativement le nouveau protocole Samsung FUS
+            # TopJohnWu's samloader-rs
             samloader-rs download -m "$MODEL" -r "$CSC" -d "$ODIN_DIR/${MODEL}_${CSC}" || exit 1
         else
-            # Fallback sur l'ancien samloader Python si le binaire Rust n'est pas présent
+            # Fallback sur le samloader Python classique avec version dynamique globale
             STR=""
-            [ "$MODEL" == "SM-S731B" ] && STR=" -v S731BXXU1AYH9/S731BOXM1AYH9/S731BXXU1AYH9/S731BXXU1AYH9"
+            if [ -n "$LATEST_FIRMWARE" ]; then
+                STR=" -v $LATEST_FIRMWARE"
+            fi
             samloader -m "$MODEL" -r "$CSC" -i "$IMEI" -s "$SERIAL_NO" download$STR -O "$ODIN_DIR/${MODEL}_${CSC}" || exit 1
         fi
         )
